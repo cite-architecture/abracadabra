@@ -1,0 +1,95 @@
+
+apply plugin: "base"
+apply plugin:  "groovy"
+apply plugin:  "maven"
+
+apply from: "versions.gradle"
+
+if (hasProperty('pub')) {
+   File f = new File(pub)
+   if (! f.exists()) {
+        throw new Exception ("No configuration file named ${pub} found.")
+    }
+    apply from : pub
+} else {
+   apply from: "pubconf.gradle"
+}
+
+// Consider possible configurations:
+if (hasProperty('conf')) {
+    System.err.print "Using configuration data from ${conf}"
+    File confFile = new File(conf)
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    apply from: conf
+
+} else {
+    File confFile = new File("conf.gradle")
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    println "Using default configuration in 'conf.gradle'"
+    apply from: "conf.gradle"
+}
+
+
+group = "edu.holycross.shot"
+version = '0.1.6'
+
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+    }
+}
+
+
+dependencies {
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
+
+    compile group: 'edu.harvard.chs', name: 'cite', version: citeVersion
+    compile group: 'net.sf.opencsv', name: 'opencsv', version : opencsvVersion
+
+    testCompile group: 'junit', name: 'junit', version: '4.8.2'
+}
+
+
+task ttl (type: JavaExec, dependsOn: compileGroovy) {
+     description = "Generates RDF representation of all inventoried indices"
+
+    main = "edu.holycross.shot.abracadabra.CiteIndex"
+    args = ["${inventory}"]
+
+    classpath sourceSets.main.output.classesDir
+    classpath configurations.runtime
+}
+
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: nexusRepo) {
+            authentication (userName: nexusUser, password: nexusPassword)
+        }
+    }
+}
+
+
+task cleanTest () {
+    doLast {
+        File out1 = new File("testdata/testoutput")
+        if (out1.exists()) { 
+            out1.listFiles().each { f ->
+                System.err.println "Delete " + f
+                f.delete()
+            }
+            out1.delete() 
+        }
+        out1.mkdir()
+    }
+}
+
+
+//test.dependsOn cleanTest

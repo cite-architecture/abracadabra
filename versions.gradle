@@ -1,0 +1,10 @@
+ext {
+
+    groovyVersion = "2.0.6"
+
+    citeVersion = "0.14.2"
+
+    opencsvVersion  = "2.0"
+    junitVersion = "4.8.2"
+
+}

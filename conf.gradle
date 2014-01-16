@@ -1,0 +1,11 @@
+
+project.ext {
+
+    // Required: inventory file
+    inventory = ""
+
+    // Optional: base directory for .tsv or .csv files. Not needed
+    // if using only indices stored in Google Fusion Tables
+    baseDirectory = ""
+
+}
