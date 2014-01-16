@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="file:/data/repos/bitbucket/cite/schemas/indices/CiteIndex.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<indexInventory xmlns="http://chs.harvard.edu/xmlns/cite">
+    <rdfNamespace abbr="hmt" fullValue="http://www.homermultitext.org/hmt/rdf/"></rdfNamespace>
+    <index verb="hmt:occursOn" inverse="hmt:hasOnIt">
+        <source type="file" value="criticalSignToFolio.tsv"/>
+    </index>
+    
+</indexInventory>
