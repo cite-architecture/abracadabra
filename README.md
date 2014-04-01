@@ -16,9 +16,8 @@
 
 Overview:
 
-- copy `conf.gradle-dist` to `conf.gradle`
-- edit `conf.gradle`  to point to a configured CITE Index inventory 
-- run `gradle ttl`
+- edit `conf.gradle` or a copy of it  to point to a configured CITE Index inventory 
+- run `gradle ttl`, or `gradle -Pconf=CONFFILE ttl`
 
 ### Explanation ###
 
