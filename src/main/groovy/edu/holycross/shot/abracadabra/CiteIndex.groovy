@@ -17,7 +17,7 @@ import edu.harvard.chs.cite.CtsUrn
 class CiteIndex {
 
 
-    int debug = 0
+    int debug = 5
 
     /** Character encoding for i/o. */
     String charEnc = "UTF-8"
@@ -78,6 +78,7 @@ class CiteIndex {
         }
 
         root[idx.index].each { i ->
+	  if (debug > 1) { System.err.println "Index " + i }
             def idxStruct = [:]
             idxStruct['verb'] = i.'@verb'
             idxStruct['inverse'] = i.'@inverse'
@@ -88,6 +89,7 @@ class CiteIndex {
 
             indices.add(idxStruct)
         }
+	if (debug > 1) { System.err.println "Indices initialized to " + indices }
     }
 
 
@@ -98,16 +100,18 @@ class CiteIndex {
     */
     RefType getRefType(String urnString ) {
         RefType reply = RefType.ERROR
+	if (debug > 0) { System.err.println "CiteIndex:getRefType: examine ${urnString}"}
         try {
             CtsUrn urn = new CtsUrn(urnString)
-            if (debug > 0) { System.err.println "CTS URN: subref1 = " + urn.getSubref1()}
-            if (urn.getSubref1() != null) {
-
+            if (urn.hasSubref()) {
                 reply =  RefType.CTS_EXTENDED
             } else {
                 reply = RefType.CTS
             }
         } catch (Exception ctse) {
+	  if (debug > 1) {
+	    System.err.println "getRefType: ${urnString} not a cts urn."
+	  }
         }
 
         try {
@@ -283,7 +287,13 @@ class CiteIndex {
             }
         }
 
+	if (debug > 0) {
+	  println "CiteIndex:ttl:  indices ${indices}"
+	}
         this.indices.each {idx ->
+	if (debug > 0) {
+	  println "\tindex ${idx}"
+	}
             switch(idx['sourceType']) {
                 case "file" :
                     String rdfData = ttlFromFile(idx['source'], idx['verb'], idx['inverse'])
