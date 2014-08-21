@@ -17,7 +17,10 @@ import edu.harvard.chs.cite.CtsUrn
 class CiteIndex {
 
 
-    int debug = 5
+  Integer WARN = 1
+  Integer DEBUG = 2
+  Integer SCREAM = 3
+  Integer debug = 0
 
     /** Character encoding for i/o. */
     String charEnc = "UTF-8"
@@ -78,7 +81,7 @@ class CiteIndex {
         }
 
         root[idx.index].each { i ->
-	  if (debug > 1) { System.err.println "Index " + i }
+	  if (debug > WARN) { System.err.println "CiteIndex:initFromFile, index " + i }
             def idxStruct = [:]
             idxStruct['verb'] = i.'@verb'
             idxStruct['inverse'] = i.'@inverse'
@@ -89,7 +92,7 @@ class CiteIndex {
 
             indices.add(idxStruct)
         }
-	if (debug > 1) { System.err.println "Indices initialized to " + indices }
+	if (debug > WARN) { System.err.println "CiteIndex: indices initialized to " + indices }
     }
 
 
@@ -100,7 +103,7 @@ class CiteIndex {
     */
     RefType getRefType(String urnString ) {
         RefType reply = RefType.ERROR
-	if (debug > 0) { System.err.println "CiteIndex:getRefType: examine ${urnString}"}
+	if (debug > WARN) { System.err.println "CiteIndex:getRefType: examine ${urnString}"}
         try {
             CtsUrn urn = new CtsUrn(urnString)
             if (urn.hasSubref()) {
@@ -110,13 +113,13 @@ class CiteIndex {
             }
         } catch (Exception ctse) {
 	  if (debug > 1) {
-	    System.err.println "getRefType: ${urnString} not a cts urn."
+	    System.err.println "CIteIndex:getRefType: ${urnString} not a cts urn."
 	  }
         }
 
         try {
             CiteUrn urn = new CiteUrn(urnString)
-            if (debug > 0) { System.err.println "CITE URN: extendedref = " + urn.getExtendedRef() }
+            if (debug > WARN) { System.err.println "CiteIndex:getRefType: CITE URN w. extendedref = " + urn.getExtendedRef() }
             if (urn.getExtendedRef() != null) {
                 reply = RefType.CITE_EXTENDED
             }  else {
@@ -141,7 +144,7 @@ class CiteIndex {
     String formatPair(String urn1, String urn2, String verb, String inverse) {
         StringBuffer reply = new StringBuffer()
         
-        if (debug > 0) { System.err.println "Formatting ${urn1} based on type " + getRefType(urn1)}
+        if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatting ${urn1} based on type " + getRefType(urn1)}
         boolean urn1ok = false
         switch(getRefType(urn1)) {
             case (RefType.CTS_EXTENDED):
@@ -171,8 +174,8 @@ class CiteIndex {
 
 
         boolean urn2ok = false
-        if (debug > 0) {
-            System.err.println "urn1 ok? " + urn1ok
+        if (debug > WARN) {
+            System.err.println "CiteIndex:formatPair: urn1 ok? " + urn1ok
             System.err.println "Formatting ${urn2} based on type " + getRefType(urn2)
         }
         switch(getRefType(urn2)) {
@@ -200,24 +203,24 @@ class CiteIndex {
             default:
                 break
         }
-        if (debug > 0) { System.err.println "urn2 ok? " + urn2ok }
+        if (debug > WARN) { System.err.println "urn2 ok? " + urn2ok }
         if (urn1ok && urn2ok) {
 
             reply.append("<${urn1}> ${verb} <${urn2}> .\n")
             reply.append("<${urn2}> ${inverse} <${urn1}> .\n")
-            if (debug > 0) { System.err.println "BOTH urns OK so added lines: " + reply.toString()}
+            if (debug > WARN) { System.err.println "BOTH urns OK so added lines: " + reply.toString()}
         } else {
-            if (debug > 0)  { System.err.println "Emptying buffer" }
+            if (debug > WARN)  { System.err.println "CiteIndex:formatPair: Emptying buffer" }
             return reply = new StringBuffer("")
         }
-        if (debug > 0) { System.err.println "Formatted " + reply.toString() }
+        if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatted " + reply.toString() }
         return reply.toString()
     }
 
     /**
     */
     String ttlFromFile(String fileName, String verb, String inverse) {
-        if (debug > 0) {System.err.println "TTL OF FILE ${fileName}"}
+        if (debug >= WARN) {System.err.println "CiteIndex:ttlFromFile ${fileName}"}
         File indexFile
         if (this.sourceDirectory) {
             indexFile = new File(this.sourceDirectory, fileName)
@@ -233,19 +236,21 @@ class CiteIndex {
                 if (ln.size() > 1) {
                     reply.append(formatPair(ln[0], ln[1], verb, inverse ))
                 } else {
-                    System.err.println "CiteIndex: unable to process row " + ln
-                    System.err.println "Could not parse csv columns."
+                    System.err.println "CiteIndex: in file ${fileName}, unable to parse csv columns in row: "
+		    System.err.println ln
                 }
             }
         } else if (fileName ==~ /.+tsv/) {
-            System.err.println "Indexing " + fileName
-            indexFile.eachLine { ln ->
+	  if (debug >= WARN) {
+            System.err.println "CiteIndex: indexing " + fileName
+	  }
+	  indexFile.eachLine { ln ->
                 def cols = ln.split(/\t/)
                 if (cols.size() > 1) {
                   
                     String formatted = formatPair(cols[0], cols[1], verb, inverse)
-                    if (debug > 0) { 
-                        System.err.println "Add row .. " + ln 
+                    if (debug > WARN) { 
+                        System.err.println "CiteIndex: add row .. " + ln 
                         System.err.println "Formatted as " + formatted
                     }
                     reply.append(formatted)
@@ -256,9 +261,9 @@ class CiteIndex {
 
             }
         } else {
-            System.err.println "ttlFromFile : NO MATCH for name " + fileName
+            System.err.println "CiteIndex:ttlFromFile : NO MATCH for name " + fileName
         }
-        if (debug > 0) { System.err.println "Returning " + reply.toString()}
+        if (debug > WARN) { System.err.println "CiteIndex: returning " + reply.toString()}
         return reply.toString()
     }
 
@@ -287,11 +292,11 @@ class CiteIndex {
             }
         }
 
-	if (debug > 0) {
+	if (debug > WARN) {
 	  println "CiteIndex:ttl:  indices ${indices}"
 	}
         this.indices.each {idx ->
-	if (debug > 0) {
+	if (debug > WARN) {
 	  println "\tindex ${idx}"
 	}
             switch(idx['sourceType']) {
