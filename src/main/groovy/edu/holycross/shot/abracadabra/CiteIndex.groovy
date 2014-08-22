@@ -217,64 +217,66 @@ class CiteIndex {
         return reply.toString()
     }
 
-    /**
-    */
-    String ttlFromFile(String fileName, String verb, String inverse) {
-        if (debug >= WARN) {System.err.println "CiteIndex:ttlFromFile ${fileName}"}
-        File indexFile
-        if (this.sourceDirectory) {
-            indexFile = new File(this.sourceDirectory, fileName)
-        } else {
-            indexFile = new File(fileName)
-        }
+  /**
+   */
+  String ttlFromFile(String fileName, String verb, String inverse) {
+    if (debug >= WARN) {System.err.println "CiteIndex:ttlFromFile ${fileName}"}
+    File indexFile
+    if (this.sourceDirectory) {
+      indexFile = new File(this.sourceDirectory, fileName)
+    } else {
+      indexFile = new File(fileName)
+    }
 
-        StringBuffer reply = new StringBuffer()
-        if (fileName ==~ /.+csv/) {
-            CSVReader reader = new CSVReader(new FileReader(indexFile))
-            // make sure we have 2 cols!
-            reader.readAll().each { ln ->
-                if (ln.size() > 1) {
-                    reply.append(formatPair(ln[0], ln[1], verb, inverse ))
-                } else {
-                    System.err.println "CiteIndex: in file ${fileName}, unable to parse csv columns in row: "
-		    System.err.println ln
-                }
-            }
-        } else if (fileName ==~ /.+tsv/) {
-	  if (debug >= WARN) {
-            System.err.println "CiteIndex: indexing " + fileName
-	  }
-	  indexFile.eachLine { ln ->
-                def cols = ln.split(/\t/)
-                if (cols.size() > 1) {
+    StringBuffer reply = new StringBuffer()
+    if (fileName ==~ /.+csv/) {
+      CSVReader reader = new CSVReader(new FileReader(indexFile))
+      Integer no = 0
+      reader.readAll().each { ln ->
+	no++;
+	if (ln.size() > 1) {
+	  reply.append(formatPair(ln[0], ln[1], verb, inverse ))
+	} else {
+	  System.err.println "CiteIndex: in file ${fileName}, unable to parse csv columns in row ${no}."
+	}
+      }
+    } else if (fileName ==~ /.+tsv/) {
+      if (debug >= WARN) {
+	System.err.println "CiteIndex: indexing " + fileName
+      }
+      Integer no = 0
+      indexFile.eachLine { ln ->
+	no++
+	def cols = ln.split(/\t/)
+	if (cols.size() > 1) {
                   
-                    String formatted = formatPair(cols[0], cols[1], verb, inverse)
-                    if (debug > WARN) { 
-                        System.err.println "CiteIndex: add row .. " + ln 
-                        System.err.println "Formatted as " + formatted
-                    }
-                    reply.append(formatted)
-                } else {
-                    System.err.println "CiteIndex: unable to process row " + ln
-                    System.err.println "Could not parse tsv columns."
-                }
-
-            }
-        } else {
-            System.err.println "CiteIndex:ttlFromFile : NO MATCH for name " + fileName
-        }
-        if (debug > WARN) { System.err.println "CiteIndex: returning " + reply.toString()}
-        return reply.toString()
+	  String formatted = formatPair(cols[0], cols[1], verb, inverse)
+	  if (debug > WARN) { 
+	    System.err.println "CiteIndex: add row .. " + ln 
+	    System.err.println "Formatted as " + formatted
+	  }
+	  reply.append(formatted)
+	} else {
+	  System.err.println "CiteIndex: unable to process row "
+	  System.err.println "Could not parse tsv columns in line ${no}."
+	}
+	
+      }
+    } else {
+      System.err.println "CiteIndex:ttlFromFile : NO MATCH for name " + fileName
     }
+    if (debug > WARN) { System.err.println "CiteIndex: returning " + reply.toString()}
+    return reply.toString()
+  }
 
 
-    /** Serializes all indices as RDF in TTL format.
-    * @param outputFile File where output will be written.
-    */
-    void ttl(File outputFile) 
-    throws Exception {
-        ttl(outputFile, false)
-    }
+  /** Serializes all indices as RDF in TTL format.
+   * @param outputFile File where output will be written.
+   */
+  void ttl(File outputFile) 
+  throws Exception {
+    ttl(outputFile, false)
+  }
 
 
 

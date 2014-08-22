@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../schemas/CiteIndexInventory.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<indexInventory xmlns="http://chs.harvard.edu/xmlns/cite">
+    <rdfNamespace abbr="hmt" fullValue="http://www.homermultitext.org/hmt/rdf/"></rdfNamespace>
+    <rdfNamespace abbr="cite" fullValue="http://www.homermultitext.org/cite/rdf/"></rdfNamespace>
+
+
+   <index verb="hmt:editStatus" inverse="hmt:statusOf">
+        <source type="file" value="venetusA.csv"/>
+    </index>
+    <index verb="hmt:editStatus" inverse="hmt:statusOf">
+        <source type="file" value="ups-1-1.csv"/>
+    </index>
+    
+    
+
+
+</indexInventory>
