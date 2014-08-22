@@ -257,8 +257,7 @@ class CiteIndex {
 	  }
 	  reply.append(formatted)
 	} else {
-	  System.err.println "CiteIndex: unable to process row "
-	  System.err.println "Could not parse tsv columns in line ${no}."
+	  System.err.println "CiteIndex: in file ${fileName} unable to process tsv columns in line ${no}."
 	}
 	
       }
