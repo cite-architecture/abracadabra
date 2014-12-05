@@ -20,7 +20,7 @@ class CiteIndex {
   Integer WARN = 1
   Integer DEBUG = 2
   Integer SCREAM = 3
-  Integer debug = 0
+  Integer debug = SCREAM
 
     /** Character encoding for i/o. */
     String charEnc = "UTF-8"

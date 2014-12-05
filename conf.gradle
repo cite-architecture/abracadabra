@@ -8,4 +8,15 @@ project.ext {
     // if using only indices stored in Google Fusion Tables
     baseDirectory = ""
 
+
+
+    // Settings for concordion:
+    mdSrc = "specs/md"
+    
+    htmlPreface = """
+<html xmlns:concordion="http://www.concordion.org/2007/concordion">
+<body>
+    """
+    htmlEnd = "</body>\n</html>\n"
+
 }
