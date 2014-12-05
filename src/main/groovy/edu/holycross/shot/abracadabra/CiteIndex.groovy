@@ -17,9 +17,9 @@ import edu.harvard.chs.cite.CtsUrn
 class CiteIndex {
 
 
-  Integer WARN = 1
-  Integer DEBUG = 2
-  Integer SCREAM = 3
+  static Integer WARN = 1
+  static Integer DEBUG = 2
+  static Integer SCREAM = 3
   Integer debug = SCREAM
 
     /** Character encoding for i/o. */
@@ -85,7 +85,7 @@ class CiteIndex {
         }
 
         root[idx.index].each { i ->
-	  if (debug > WARN) { System.err.println "CiteIndex:initFromFile, index " + i }
+	  //if (debug > WARN) { System.err.println "CiteIndex:initFromFile, index " + i }
             def idxStruct = [:]
             idxStruct['verb'] = i.'@verb'
             idxStruct['inverse'] = i.'@inverse'
@@ -96,7 +96,7 @@ class CiteIndex {
 
             indices.add(idxStruct)
         }
-	if (debug > WARN) { System.err.println "CiteIndex: indices initialized to " + indices }
+	//if (debug > WARN) { System.err.println "CiteIndex: indices initialized to " + indices }
     }
 
 
@@ -105,9 +105,9 @@ class CiteIndex {
     * @param urnString String value of URN to check.
     * @returns a RefType
     */
-    RefType getRefType(String urnString ) {
+    static RefType getRefType(String urnString ) {
         RefType reply = RefType.ERROR
-	if (debug > WARN) { System.err.println "CiteIndex:getRefType: examine ${urnString}"}
+	//if (debug > WARN) { System.err.println "CiteIndex:getRefType: examine ${urnString}"}
         try {
             CtsUrn urn = new CtsUrn(urnString)
             if (urn.hasSubref()) {
@@ -116,14 +116,14 @@ class CiteIndex {
                 reply = RefType.CTS
             }
         } catch (Exception ctse) {
-	  if (debug > 1) {
+	  /* if (debug > 1) {
 	    System.err.println "CIteIndex:getRefType: ${urnString} not a cts urn."
-	  }
+	    }*/
         }
 
         try {
             CiteUrn urn = new CiteUrn(urnString)
-            if (debug > WARN) { System.err.println "CiteIndex:getRefType: CITE URN w. extendedref = " + urn.getExtendedRef() }
+            //if (debug > WARN) { System.err.println "CiteIndex:getRefType: CITE URN w. extendedref = " + urn.getExtendedRef() }
             if (urn.getExtendedRef() != null) {
                 reply = RefType.CITE_EXTENDED
             }  else {
@@ -145,31 +145,49 @@ class CiteIndex {
     * @returns RDF TTL statements relating urn1 and urn2, or an
     * empty String if urn1 or urn2 cannot be parsed.
     */
-    String formatPair(String urn1, String urn2, String verb, String inverse) {
-        StringBuffer reply = new StringBuffer()
-        
-        if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatting ${urn1} based on type " + getRefType(urn1)}
+  static String formatPair(String urn1, String urn2, String verb, String inverse) {
+    return formatPair(urn1, urn2, verb, inverse, 0)
+  }
+  
+  static String formatPair(String urn1, String urn2, String verb, String inverse, Integer debug) {
+    
+    StringBuffer reply = new StringBuffer()
+    String urn1encoded = ""
+    String urn2encoded = ""
+    
+    if (debug > CiteIndex.WARN) {
+      System.err.println "CiteIndex:formatPair: formatting ${urn1} based on type " + getRefType(urn1)
+    }
 
 
-	// format urn1 relations:
-        boolean urn1ok = false
-        switch(getRefType(urn1)) {
+    // format urn1 relations:
+    boolean urn1ok = false
+    switch(CiteIndex.getRefType(urn1)) {
 
-	  // NS: this is where we need to encode urn1 for RDF output
-	case (RefType.CTS_EXTENDED):
+      // NS: this is where we need to encode urn1 for RDF output
+    case (RefType.CTS_EXTENDED):
+    CtsUrn ctsUrn = new CtsUrn(urn1)
+    CtsUrn parentUrn
 
+    String workLevel = ctsUrn.labelForWorkLevel() 
+    if (workLevel == "version") {
+      parentUrn = new CtsUrn(ctsUrn.reduceToWork())
+      
+    } else if (workLevel == "exemplar") {
+      parentUrn = new CtsUrn(ctsUrn.reduceToVersion())
+    }
+    
 	
-	CtsUrn ctsUrn = new CtsUrn(urn1)
-	String urn = "${ctsUrn.getUrnWithoutPassage()}:${ctsUrn.getPassageNode()}"
+    reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${parentUrn.toString(true)}> .\n")
+    reply.append("<${parentUrn.toString(true)}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
 
-	
-	reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${urn}> .\n")
-	reply.append("<${urn}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
-	urn1ok = true
-	break
+    urn1encoded = ctsUrn.toString(true)
+    urn1ok = true
+    
+    break
 
 
-	case (RefType.CITE_EXTENDED):
+    case (RefType.CITE_EXTENDED):
 
 	// NS: this is where we need to encode urn1 for RDF output
 	CiteUrn citeUrn = new CiteUrn(urn1)
@@ -177,70 +195,90 @@ class CiteIndex {
 	reply.append("<${urn1}> cite:isExtendedRef <${urn}> .\n")
 	reply.append("<${urn}> cite:hasExtendedRef <${urn1}> .\n")
 	urn1ok = true
+	urn1encoded = citeUrn.toString()
 	break
 
 
 	case (RefType.CITE):
 	case (RefType.CTS):
 	urn1ok = true
+	urn1encoded = urn1
 	break
 	default:
 	break
         }
 
-
-
-	// format urn2 relations:
-        boolean urn2ok = false
-        if (debug > WARN) {
-	  System.err.println "CiteIndex:formatPair: urn1 ok? " + urn1ok
-            System.err.println "Formatting ${urn2} based on type " + getRefType(urn2)
-        }
-
-	
-        switch(getRefType(urn2)) {
-
-	case (RefType.CTS_EXTENDED):
-	CtsUrn ctsUrn = new CtsUrn(urn2)
-	String urn = "${ctsUrn.getUrnWithoutPassage()}:${ctsUrn.getPassageNode()}"
-	reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${urn}> .\n")
-	reply.append("<${urn}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
-	urn2ok = true
-	break
-
-
-	case (RefType.CITE_EXTENDED):
-	CiteUrn citeUrn = new CiteUrn(urn2)
-	String urn = "urn:cite:${citeUrn.getNs()}:${citeUrn.getCollection()}.${citeUrn.getObjectId()}"
-	reply.append("<${urn2}> cite:isExtendedRef <${urn}> .\n")
-	reply.append("<${urn}> cite:hasExtendedRef <${urn2}> .\n")
-	urn2ok = true
-	break
-
-	case (RefType.CITE):
-	case (RefType.CTS):
-	urn2ok = true
-	break
-
-	
-	default:
-	break
-        }
-        if (debug > WARN) { System.err.println "urn2 ok? " + urn2ok }
-	
-        if (urn1ok && urn2ok) {
-	  // FORMAT HERE FOR EXTENDED 
-	  reply.append("<${urn1}> ${verb} <${urn2}> .\n")
-	  reply.append("<${urn2}> ${inverse} <${urn1}> .\n")
-	  if (debug > WARN) { System.err.println "BOTH urns OK so added lines: " + reply.toString()}
-	  
-        } else {
-	  if (debug > WARN)  { System.err.println "CiteIndex:formatPair: Emptying buffer" }
-	  return reply = new StringBuffer("")
-        }
-        if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatted " + reply.toString() }
-        return reply.toString()
+        
+    if (debug > CiteIndex.WARN) {
+      System.err.println "CiteIndex:formatPair: formatting ${urn2} based on type " + getRefType(urn2)
     }
+
+    // format urn2 relations:
+    boolean urn2ok = false
+    
+	
+    switch(CiteIndex.getRefType(urn2)) {
+
+    case (RefType.CTS_EXTENDED):
+    CtsUrn ctsUrn = new CtsUrn(urn2)
+    CtsUrn parentUrn
+
+    String workLevel = ctsUrn.labelForWorkLevel() 
+    if (workLevel == "version") {
+      parentUrn = new CtsUrn(ctsUrn.reduceToWork())
+      
+    } else if (workLevel == "exemplar") {
+      parentUrn = new CtsUrn(ctsUrn.reduceToVersion())
+    }
+
+    reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${parentUrn.toString(true)}> .\n")
+    reply.append("<${parentUrn.toString(true)}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
+
+
+    urn2encoded = ctsUrn.toString(true)
+    urn2ok = true
+    break
+
+    case (RefType.CITE_EXTENDED):
+    CiteUrn citeUrn = new CiteUrn(urn2)
+
+    // NOT REALLY RIGHT:  EXPAND TO INCLUDE VERSIONS!
+    String parentUrn = "urn:cite:${citeUrn.getNs()}:${citeUrn.getCollection()}.${citeUrn.getObjectId()}"
+	
+    //CiteUrn parentUrn = new CiteUrn()
+    
+    reply.append("<${citeUrn}> cite:isExtendedRef <${parentUrn}> .\n")
+    reply.append("<${parentUrn}> cite:hasExtendedRef <${citeUrn}> .\n")
+    urn2encoded = citeUrn.toString()
+    urn2ok = true
+    break
+
+    case (RefType.CITE):
+    case (RefType.CTS):
+    urn2encoded = urn2
+    urn2ok = true
+    break
+
+	
+    default:
+    break
+    }
+    //if (debug > WARN) { System.err.println "urn2 ok? " + urn2ok }
+	
+    if (urn1ok && urn2ok) {
+      // FORMAT HERE FOR EXTENDED
+      
+      reply.append("<${urn1encoded}> ${verb} <${urn2encoded}> .\n")
+      reply.append("<${urn2encoded}> ${inverse} <${urn1encoded}> .\n")
+      //if (debug > WARN) { System.err.println "BOTH urns OK so added lines: " + reply.toString()}
+      
+    } else {
+      //if (debug > WARN)  { System.err.println "CiteIndex:formatPair: Emptying buffer" }
+      return reply = new StringBuffer("")
+    }
+    //if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatted " + reply.toString() }
+    return reply.toString()
+  }
 
   /**
    */
@@ -260,7 +298,7 @@ class CiteIndex {
       reader.readAll().each { ln ->
 	no++;
 	if (ln.size() > 1) {
-	  reply.append(formatPair(ln[0], ln[1], verb, inverse ))
+	  reply.append(CiteIndex.formatPair(ln[0], ln[1], verb, inverse ))
 	} else {
 	  System.err.println "CiteIndex: in file ${fileName}, empty row, line ${no}."
 	}
@@ -275,7 +313,7 @@ class CiteIndex {
 	def cols = ln.split(/\t/)
 	if (cols.size() > 1) {
                   
-	  String formatted = formatPair(cols[0], cols[1], verb, inverse)
+	  String formatted = CiteIndex.formatPair(cols[0], cols[1], verb, inverse)
 	  if (debug > WARN) { 
 	    System.err.println "CiteIndex: add row .. " + ln 
 	    System.err.println "Formatted as " + formatted
