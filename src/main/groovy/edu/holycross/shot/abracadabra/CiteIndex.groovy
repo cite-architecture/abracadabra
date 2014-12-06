@@ -178,10 +178,10 @@ class CiteIndex {
     }
     
 	
-    reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${parentUrn.toString(true)}> .\n")
-    reply.append("<${parentUrn.toString(true)}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
+    reply.append("<${ctsUrn.toString()}> cite:isExtendedRef <${parentUrn.toString()}> .\n")
+    reply.append("<${parentUrn.toString()}> cite:hasExtendedRef <${ctsUrn.toString()}> .\n")
 
-    urn1encoded = ctsUrn.toString(true)
+    urn1encoded = ctsUrn.toString()
     urn1ok = true
     
     break
@@ -231,11 +231,11 @@ class CiteIndex {
       parentUrn = new CtsUrn(ctsUrn.reduceToVersion())
     }
 
-    reply.append("<${ctsUrn.toString(true)}> cite:isExtendedRef <${parentUrn.toString(true)}> .\n")
-    reply.append("<${parentUrn.toString(true)}> cite:hasExtendedRef <${ctsUrn.toString(true)}> .\n")
+    reply.append("<${ctsUrn.toString()}> cite:isExtendedRef <${parentUrn.toString()}> .\n")
+    reply.append("<${parentUrn.toString()}> cite:hasExtendedRef <${ctsUrn.toString()}> .\n")
 
 
-    urn2encoded = ctsUrn.toString(true)
+    urn2encoded = ctsUrn.toString()
     urn2ok = true
     break
 
