@@ -1,0 +1,37 @@
+# Dependencies
+markdown:         redcarpet
+pygments:         true
+
+# Permalinks
+permalink:        pretty
+
+# Setup
+title:            abracadabra
+tagline:          'A library for working with CITE indices'
+description:      'abracadabra is a JVM library for working with indexed relations of URNs in sources such as simple .csv files, and generating a RDF graph of relations'
+baseurl: '/abracadabra/'
+
+
+author:
+  name:           'Neel Smith'
+ 
+
+paginate:         5
+
+github:
+  repo:           https://github.com/neelsmith/abracadabra
+
+version:          0.12.0
+
+links:
+  - title: Live specification
+    url: /specs/abracadabra/Abracadabra.html
+  - title: API docs
+    url: /api
+  - title: Github project
+    url: https://github.com/cite-architecture/abracadabra
+    external: true
+  - title: CITE architecture home page
+    url: http://cite-architecture.github.io/
+    external: true
+   
