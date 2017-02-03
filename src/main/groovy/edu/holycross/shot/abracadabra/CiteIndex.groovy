@@ -172,7 +172,7 @@ class CiteIndex {
     String urn2encoded = ""
 
     if (debug > CiteIndex.WARN) {
-      //System.err.println "CiteIndex:formatPair: formatting ${urn1} based on type " + getRefType(urn1)
+      System.err.println "CiteIndex:formatPair: formatting ${urn1} based on type " + getRefType(urn1)
     }
 
 
@@ -217,6 +217,33 @@ class CiteIndex {
 					case (RefType.CITE):
 						CiteUrn tempCite = new CiteUrn(urn1)
 						Cite2Urn tempCite2 = new Cite2Urn(tempCite)
+						urn1encoded = tempCite2.encodeSubref()
+						urn1ok = true
+						break
+					case (RefType.CTS):
+						urn1encoded = new CtsUrn(urn1).encodeSubref()
+						urn1ok = true
+						break
+
+	    case (RefType.CITE2_EXTENDED):
+
+					// NS: this is where we need to encode urn1 for RDF output
+					Cite2Urn cite2Urn = new Cite2Urn(urn1)
+					reply.append("<${cite2Urn.encodeSubref()}> cite:isExtendedRef <${cite2Urn.reduceToObject()}> .\n")
+					reply.append("<${cite2Urn.reduceToObject()}> cite:hasExtendedRef <${cite2Urn.encodeSubref()}> .\n")
+					urn1ok = true
+					urn1encoded = cite2Urn.encodeSubref()
+					break
+
+
+					case (RefType.CITE):
+						CiteUrn tempCite = new CiteUrn(urn1)
+						Cite2Urn tempCite2 = new Cite2Urn(tempCite)
+						urn1encoded = tempCite2.encodeSubref()
+						urn1ok = true
+						break
+					case (RefType.CITE2):
+						Cite2Urn tempCite2 = new Cite2Urn(urn1)
 						urn1encoded = tempCite2.encodeSubref()
 						urn1ok = true
 						break
@@ -305,56 +332,56 @@ class CiteIndex {
     return reply.toString()
   }
 
-  /**
-   */
-  String ttlFromFile(String fileName, String verb, String inverse) {
-    if (debug >= WARN) {System.err.println "CiteIndex:ttlFromFile ${fileName}"}
-    File indexFile
-    if (this.sourceDirectory) {
-      indexFile = new File(this.sourceDirectory, fileName)
-    } else {
-      indexFile = new File(fileName)
-    }
+	/**
+	*/
+	String ttlFromFile(String fileName, String verb, String inverse) {
+		if (debug >= WARN) {System.err.println "CiteIndex:ttlFromFile ${fileName}"}
+		File indexFile
+		if (this.sourceDirectory) {
+			indexFile = new File(this.sourceDirectory, fileName)
+			} else {
+				indexFile = new File(fileName)
+			}
 
-    StringBuffer reply = new StringBuffer()
-    if (fileName ==~ /.+csv/) {
-      CSVReader reader = new CSVReader(new FileReader(indexFile))
-      Integer no = 0
-      reader.readAll().each { ln ->
-	no++;
-	if (ln.size() > 1) {
-	  reply.append(CiteIndex.formatPair(ln[0], ln[1], verb, inverse ))
-	} else {
-	  System.err.println "CiteIndex: in file ${fileName}, empty row, line ${no}."
-	}
-      }
-    } else if (fileName ==~ /.+tsv/) {
-      if (debug >= WARN) {
-	System.err.println "CiteIndex: indexing " + fileName
-      }
-      Integer no = 0
-      indexFile.eachLine { ln ->
-	no++
-	def cols = ln.split(/\t/)
-	if (cols.size() > 1) {
+			StringBuffer reply = new StringBuffer()
+			if (fileName ==~ /.+csv/) {
+				CSVReader reader = new CSVReader(new FileReader(indexFile))
+				Integer no = 0
+				reader.readAll().each { ln ->
+					no++;
+					if (ln.size() > 1) {
+						reply.append(CiteIndex.formatPair(ln[0], ln[1], verb, inverse ))
+						} else {
+							System.err.println "CiteIndex: in file ${fileName}, empty row, line ${no}."
+						}
+					}
+					} else if (fileName ==~ /.+tsv/) {
+						if (debug >= WARN) {
+							System.err.println "CiteIndex: indexing " + fileName
+						}
+						Integer no = 0
+						indexFile.eachLine { ln ->
+							no++
+							def cols = ln.split(/\t/)
+							if (cols.size() > 1) {
 
-	  String formatted = CiteIndex.formatPair(cols[0], cols[1], verb, inverse)
-	  if (debug > WARN) {
-	    System.err.println "CiteIndex: add row .. " + ln
-	    System.err.println "Formatted as " + formatted
-	  }
-	  reply.append(formatted)
-	} else {
-	  System.err.println "CiteIndex: in file ${fileName} unable to process tsv columns in line ${no}."
-	}
+								String formatted = CiteIndex.formatPair(cols[0], cols[1], verb, inverse)
+								if (debug > WARN) {
+									System.err.println "CiteIndex: add row .. " + ln
+									System.err.println "Formatted as " + formatted
+								}
+								reply.append(formatted)
+								} else {
+									System.err.println "CiteIndex: in file ${fileName} unable to process tsv columns in line ${no}."
+								}
 
-      }
-    } else {
-      System.err.println "CiteIndex:ttlFromFile : NO MATCH for name " + fileName
-    }
-    if (debug > WARN) { System.err.println "CiteIndex: returning " + reply.toString()}
-    return reply.toString()
-  }
+							}
+							} else {
+								System.err.println "CiteIndex:ttlFromFile : NO MATCH for name " + fileName
+							}
+							if (debug > WARN) { System.err.println "CiteIndex: returning " + reply.toString()}
+							return reply.toString()
+						}
 
 
   /** Serializes all indices as RDF in TTL format.
