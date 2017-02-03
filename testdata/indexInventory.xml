@@ -9,18 +9,18 @@
   
 
     <!--  entries created by SyntaxTokenizer -->
-   <!-- <index verb="orca:exemplifies" inverse="orca:exemplifiedBy">
+    <index verb="orca:exemplifies" inverse="orca:exemplifiedBy">
         <source type="file" value="INDEX-exemplifies-SynTok-greekLit_tlg0007-tlg012-ziegler.tsv"></source>
-    </index>-->
+    </index>
     <index verb="orca:analyzes" inverse="orca:analyzedBy">
         <source type="file" value="INDEX-analyzes-SynTok-greekLit_tlg0007-tlg012-ziegler.tsv"></source>
     </index>
     <index verb="orca:hasAnalysis" inverse="orca:analysisFor">
         <source type="file" value="INDEX-hasAnalysis-SynTok-greekLit_tlg0007-tlg012-ziegler.tsv"></source>
     </index>
-   <!-- <index verb="cts:hasSubref" inverse="cts:isSubrefOf">
+    <index verb="cts:hasSubref" inverse="cts:isSubrefOf">
         <source type="file" value="INDEX-hasSubref-SynTok-greekLit_tlg0007-tlg012-ziegler.tsv"></source>
-    </index>-->
+    </index>
     
     <!-- END  entries created by SyntaxTokenizer -->
 

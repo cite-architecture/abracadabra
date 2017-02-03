@@ -300,12 +300,27 @@ class CiteIndex {
 		    urn2ok = true
 		    break
 
+				case (RefType.CITE2_EXTENDED):
+
+						// NS: this is where we need to encode urn1 for RDF output
+						Cite2Urn cite2Urn = new Cite2Urn(urn2)
+						reply.append("<${cite2Urn.encodeSubref()}> cite:isExtendedRef <${cite2Urn.reduceToObject()}> .\n")
+						reply.append("<${cite2Urn.reduceToObject()}> cite:hasExtendedRef <${cite2Urn.encodeSubref()}> .\n")
+						urn1ok = true
+						urn1encoded = cite2Urn.encodeSubref()
+						break
+
 					case (RefType.CITE):
 						CiteUrn tempCite = new CiteUrn(urn2)
 						Cite2Urn tempCite2 = new Cite2Urn(tempCite)
 						urn2encoded = tempCite2.encodeSubref()
 						urn2ok = true
 						break
+						case (RefType.CITE2):
+							Cite2Urn tempCite2 = new Cite2Urn(urn2)
+							urn2encoded = tempCite2.encodeSubref()
+							urn2ok = true
+							break
 					case (RefType.CTS):
 						urn2encoded = new CtsUrn(urn2).encodeSubref()
 						urn2ok = true
@@ -325,7 +340,7 @@ class CiteIndex {
       //if (debug > WARN) { System.err.println "BOTH urns OK so added lines: " + reply.toString()}
 
     } else {
-      //if (debug > WARN)  { System.err.println "CiteIndex:formatPair: Emptying buffer" }
+      System.err.println "CiteIndex: formatPair: One of ${urn1}, ${urn2} was not okay!" 
       return reply = new StringBuffer("")
     }
     //if (debug > WARN) { System.err.println "CiteIndex:formatPair: formatted " + reply.toString() }
